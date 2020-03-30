@@ -1,1 +1,1 @@
-# mozilla-sops-app
+# cf-vault-example
