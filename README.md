@@ -14,6 +14,6 @@ Note that if you install this locally (`mvn clean install`) the build will fail,
 
 ## Example Usage
 
-Add your private key as an environment variable, `PRIV_KEY`, either in the YAML or through the Codefresh UI.  See the [documentation] (https://codefresh.io/docs/docs/yaml-examples/examples/decryption-with-mozilla-sops/) for more details.
+Add your private key as an environment variable, `PRIV_KEY`, either in the YAML or through the Codefresh UI.  See the [documentation](https://codefresh.io/docs/docs/yaml-examples/examples/decryption-with-mozilla-sops/) for more details.
 
 [Example pipeline](codefresh.yaml)
