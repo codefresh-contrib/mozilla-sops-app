@@ -1,0 +1,58 @@
+# More examples of Codefresh YAML can be found at
+# https://codefresh.io/docs/docs/yaml-examples/examples/
+
+version: "1.0"
+# Stages can help you organize your steps in stages
+stages:
+  - "clone"
+  - "import"
+  - "decrypt"
+  - "package"
+
+steps:
+  clone:
+    title: "Cloning repository..."
+    type: "git-clone"
+    stage: "clone"
+    arguments:
+      repo: "codefresh-contrib/mozilla-sops-app"
+      revision: "master"
+
+  import_keys:
+    title: "Importing gpg keys..."
+    type: "freestyle"
+    image: "vladgh/gpg"
+    stage: "import"
+    arguments:
+      working_directory: '${{clone}}'
+      commands:
+        - gpg --import public.key
+        - echo -e "${{PRIV_KEY}}" > private.key
+        - gpg --allow-secret-key-import --import private.key
+
+  decrypt_password:
+    title: "Decrypting password..."
+    type: "freestyle"
+    working_directory: "${{clone}}"
+    stage: "decrypt"
+    arguments:
+      image: "mozilla/sops"
+      commands:
+        - cp -r /codefresh/volume/.gnupg /root/.gnupg
+        - cf_export password=$(sops --decrypt --extract '["password"]' credentials.yaml)
+
+  package_jar:
+    title: "Packaging jar and running unit tests..."
+    working_directory: ${{clone}}
+    stage: "package"
+    arguments:
+      image: "maven:3.5.2-jdk-8-alpine"
+      commands:
+        - mvn -Dmaven.repo.local=/codefresh/volume/m2_repository -Dserver.host=my-redis-db-host clean package
+    services:
+      composition:
+        my-redis-db-host:
+          image: 'redis:4-alpine'
+          command: 'redis-server --requirepass $password'
+          ports:
+            - 6379
